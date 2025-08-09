@@ -4,6 +4,7 @@ import com.marquinhos.dev.orbit.model.Project;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.util.StringUtils.hasText;
 
@@ -23,5 +24,18 @@ public class ProjectService {
 
     public List<Project> findAll(){
         return new ArrayList<>(projects);
+    }
+
+    public Optional<Project> findById(Integer id) {
+        return projects.stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst();
+    }
+
+    public void delete(Integer id) {
+        boolean removed = projects.removeIf(p -> p.getId().equals(id));
+        if (!removed) {
+            throw new IllegalArgumentException("Project with id " + id + " not found");
+        }
     }
 }
