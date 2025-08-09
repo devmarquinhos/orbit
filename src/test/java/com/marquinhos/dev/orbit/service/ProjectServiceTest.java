@@ -2,6 +2,9 @@ package com.marquinhos.dev.orbit.service;
 
 import com.marquinhos.dev.orbit.model.Project;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ProjectServiceTest {
@@ -68,5 +71,53 @@ public class ProjectServiceTest {
         assertThrows(IllegalArgumentException.class, () -> {
             service.create(input);
         });
+    }
+
+    @Test
+    void shouldReturnAllProjects(){
+        // Given
+        Project p1 = new Project();
+        p1.setName("Orbit");
+
+        Project p2 = new Project();
+        p2.setName("Moon");
+
+        service.create(p1);
+        service.create(p2);
+
+        // When
+        List<Project> allProjects = service.findAll();
+
+        // Then
+        assertEquals(2, allProjects.size());
+        assertEquals("Orbit", allProjects.get(0).getName());
+        assertEquals("Moon", allProjects.get(1).getName());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoProjectsExist(){
+        // Given
+        List<Project> allProjects = service.findAll();
+
+        // Then
+        assertEquals(0, allProjects.size());
+    }
+
+    @Test
+    void shouldIncrementIdForEachProjectCreated() {
+        // Given
+        Project p1 = new Project();
+        p1.setName("Orbit");
+
+        Project p2 = new Project();
+        p2.setName("Moon");
+
+        // When
+        Project saved1 = service.create(p1);
+        Project saved2 = service.create(p2);
+
+        // Then
+        assertEquals(1, saved1.getId());
+        assertEquals(2, saved2.getId());
     }
 }
