@@ -2,7 +2,6 @@ package com.marquinhos.dev.orbit.controller;
 
 import com.marquinhos.dev.orbit.model.Note;
 import com.marquinhos.dev.orbit.service.NoteService;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +28,8 @@ public class NoteController {
     }
 
     @GetMapping("/project/{projectId}")
-    public ResponseEntity<List<Note>> findByProjectId(@PathVariable Integer id){
-        return ResponseEntity.ok(noteService.findByProjectId(id));
+    public ResponseEntity<List<Note>> findByProjectId(@PathVariable Integer projectId){
+        return ResponseEntity.ok(noteService.findByProjectId(projectId));
     }
 
     @PostMapping("/project/{projectId}")
