@@ -1,40 +1,22 @@
 package com.marquinhos.dev.orbit.model;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "projects")
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class Project {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(nullable = false)
     private String name;
+
     private String description;
-
-    public Project(String name, String description) {
-        this.name = name;
-        this.description = description;
-    }
-
-    public Project() {
-        super();
-    }
-
-    public Integer getId(){
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    };
-
-    public String getDescription() {
-        return description;
-    };
-
-    public void setId(Integer id){
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 }

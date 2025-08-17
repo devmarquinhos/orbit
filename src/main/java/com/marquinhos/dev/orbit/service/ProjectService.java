@@ -1,41 +1,40 @@
 package com.marquinhos.dev.orbit.service;
 
 import com.marquinhos.dev.orbit.model.Project;
+import com.marquinhos.dev.orbit.repository.ProjectRepository;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.springframework.util.StringUtils.hasText;
-
+@Service
 public class ProjectService {
-    private final List<Project> projects = new ArrayList<>();
-    private Integer nextId = 1;
 
-    public Project create(Project project) {
-        if (hasText(project.getName())) {
-            project.setId(nextId++);
-            projects.add(project);
-            return project;
-        } else {
-            throw new IllegalArgumentException("Project name must not be null or empty.");
-        }
+    private final ProjectRepository repository;
+
+    public ProjectService(ProjectRepository repository) {
+        this.repository = repository;
     }
 
-    public List<Project> findAll(){
-        return new ArrayList<>(projects);
+    public Project create(Project project) {
+        if (project.getName() == null || project.getName().isBlank()) {
+            throw new IllegalArgumentException("Project name must not be null or empty.");
+        }
+        return repository.save(project);
+    }
+
+    public List<Project> findAll() {
+        return repository.findAll();
     }
 
     public Optional<Project> findById(Integer id) {
-        return projects.stream()
-                .filter(p -> p.getId().equals(id))
-                .findFirst();
+        return repository.findById(id);
     }
 
     public void delete(Integer id) {
-        boolean removed = projects.removeIf(p -> p.getId().equals(id));
-        if (!removed) {
-            throw new IllegalArgumentException("Project with id " + id + " not found");
+        if (!repository.existsById(id)) {
+            throw new IllegalArgumentException("Project with id " + id + " not found.");
         }
+        repository.deleteById(id);
     }
 }

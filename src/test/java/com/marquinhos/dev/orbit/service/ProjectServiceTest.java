@@ -1,123 +1,84 @@
 package com.marquinhos.dev.orbit.service;
 
 import com.marquinhos.dev.orbit.model.Project;
+import com.marquinhos.dev.orbit.repository.ProjectRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-public class ProjectServiceTest {
-    ProjectService service = new ProjectService();
+class ProjectServiceTest {
 
-    @Test
-    void shouldCreateProjectWithNameAndDescription(){
-        // GIVEN - dados de entrada
-        Project project = new Project("Orbit", "Project Aggregator");
+    @Mock
+    private ProjectRepository repository;
 
-        // WHEN - ação que será realizada
-        Project createdProject = service.create(project);
+    @InjectMocks
+    private ProjectService service;
 
-        // THEN - resultado esperado
-        assertNotNull(createdProject);
-        assertEquals("Orbit", createdProject.getName());
-        assertEquals("Project Aggregator", createdProject.getDescription());
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void shouldReturnProjectWithIdWhenSaved(){
-        // Given
-        Project input = new Project();
-        input.setName("My test project");
+    void shouldCreateProjectWhenNameIsValid() {
+        Project project = new Project();
+        project.setName("Orbit");
 
-        // When
-        Project result = service.create(input);
+        Project saved = new Project();
+        saved.setId(1);
+        saved.setName("Orbit");
 
-        // Then
-        assertNotNull(result.getId(), "ID should not be null after saving the project");
+        when(repository.save(any(Project.class))).thenReturn(saved);
+
+        Project result = service.create(project);
+
+        assertNotNull(result.getId());
+        assertEquals("Orbit", result.getName());
     }
 
     @Test
-    void shouldThrownExceptionIfProjectNameIsNull(){
-        // Given
-        Project input = new Project();
-        input.setName(null);
+    void shouldThrowExceptionWhenNameIsNull() {
+        Project project = new Project();
 
-        // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            service.create(input);
-        });
+        assertThrows(IllegalArgumentException.class, () -> service.create(project));
+        verify(repository, never()).save(any());
     }
 
     @Test
-    void shouldThrownExceptionWhenProjectNameIsEmpty(){
-        // Given
-        Project input = new Project();
-        input.setName("");
+    void shouldFindById() {
+        Project project = new Project();
+        project.setId(1);
+        project.setName("Orbit");
 
-        // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            service.create(input);
-        });
+        when(repository.findById(1)).thenReturn(Optional.of(project));
+
+        Optional<Project> result = service.findById(1);
+
+        assertTrue(result.isPresent());
+        assertEquals("Orbit", result.get().getName());
     }
 
     @Test
-    void shouldThrownExceptionWhenProjectNameIsBlank(){
-        // Given
-        Project input = new Project();
-        input.setName("   ");
+    void shouldDeleteProjectWhenExists() {
+        when(repository.existsById(1)).thenReturn(true);
 
-        // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            service.create(input);
-        });
+        service.delete(1);
+
+        verify(repository).deleteById(1);
     }
 
     @Test
-    void shouldReturnAllProjects(){
-        // Given
-        Project p1 = new Project();
-        p1.setName("Orbit");
+    void shouldThrowExceptionWhenDeletingNonExistingProject() {
+        when(repository.existsById(99)).thenReturn(false);
 
-        Project p2 = new Project();
-        p2.setName("Moon");
-
-        service.create(p1);
-        service.create(p2);
-
-        // When
-        List<Project> allProjects = service.findAll();
-
-        // Then
-        assertEquals(2, allProjects.size());
-        assertEquals("Orbit", allProjects.get(0).getName());
-        assertEquals("Moon", allProjects.get(1).getName());
-    }
-
-    @Test
-    void shouldReturnEmptyListWhenNoProjectsExist(){
-        // Given
-        List<Project> allProjects = service.findAll();
-
-        // Then
-        assertEquals(0, allProjects.size());
-    }
-
-    @Test
-    void shouldIncrementIdForEachProjectCreated() {
-        // Given
-        Project p1 = new Project();
-        p1.setName("Orbit");
-
-        Project p2 = new Project();
-        p2.setName("Moon");
-
-        // When
-        Project saved1 = service.create(p1);
-        Project saved2 = service.create(p2);
-
-        // Then
-        assertEquals(1, saved1.getId());
-        assertEquals(2, saved2.getId());
+        assertThrows(IllegalArgumentException.class, () -> service.delete(99));
     }
 }
