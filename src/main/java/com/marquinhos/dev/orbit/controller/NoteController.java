@@ -4,7 +4,9 @@ import com.marquinhos.dev.orbit.model.Note;
 import com.marquinhos.dev.orbit.service.NoteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -16,25 +18,19 @@ public class NoteController {
         this.noteService = noteService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<Note>> findAll(){
-        return ResponseEntity.ok(noteService.findAll());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Note> findById(@PathVariable Integer id){
-        return noteService.findById(id).map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
     @GetMapping("/project/{projectId}")
-    public ResponseEntity<List<Note>> findByProjectId(@PathVariable Integer projectId){
+    public ResponseEntity<List<Note>> findByProjectId(@PathVariable("projectId") Integer projectId){
         return ResponseEntity.ok(noteService.findByProjectId(projectId));
     }
 
     @PostMapping("/project/{projectId}")
-    public ResponseEntity<Note> save(@PathVariable Integer projectId, @RequestBody Note note){
-        return ResponseEntity.ok(noteService.save(projectId, note));
+    public ResponseEntity<Note> save(@PathVariable("projectId") Integer projectId, @RequestBody Note note){
+        Note saved = noteService.save(projectId, note);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(saved.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(saved);
     }
 
     @DeleteMapping("/{id}")
